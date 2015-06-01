@@ -89,6 +89,32 @@ int main(int argc, char *argv[]) {
 	fclose(output);
 }
 
+/* Reads the key from user imput, returns it's size */
+/*int getKey(unsigned char *key;) {
+	int i, length;
+	unsigned int byte;
+	
+	printf("Key size: ");
+	if (scanf("%d", &length) != 1) {
+		fprintf(stderr, "\nInvalid key size.\n");
+		exit(1);
+	}
+	key = (char *)malloc((length + 1) * (sizeof(char)));
+	getchar();
+
+	printf("Encryption key: ");
+	for (i = 0; i < length; i++) {
+		if (scanf("%u", &byte) != 1) {
+			fprintf(stderr, "\nError reading encryption key.\n");
+			exit(1);
+		}
+		key[i] = byte % 256;
+	}
+	key[length] = '\0';
+
+	return lenght;
+} */
+
 /* Implements the Vigenere cipher. */
 void vigenere(unsigned char *buf, int len) {
 	int i, length;
@@ -119,41 +145,72 @@ void vigenere(unsigned char *buf, int len) {
 	free(key);
 }
 
+/* Reads the value of the key ab from the user */
+void getAffineKey(unsigned char *key_a, unsigned char *key_b) {
+	unsigned int byte;
+
+	printf("Encryption key part A: ");
+	if (scanf("%u", &byte) != 1) {
+		fprintf(stderr, "\nError reading encryption key part A.\n");
+		exit(1);
+	} else {
+		*key_a = byte % 256;
+	}
+	printf("Encryption key part B: ");
+	if (scanf("%u", &byte) != 1) {
+		fprintf(stderr, "\nError reading encryption key part B.\n");
+		exit(1);
+	} else {
+		*key_b = byte % 256;
+	}
+}
+
+/* Greatest Common Divisor */
+gcd(int a, int b)
+{
+  int aux;
+  while(a != 0) {
+	aux = a; 
+	a = b%a;  
+	b = aux;
+  }
+  return b;
+}
+
 /* Implements the affine encryption */
 void affine_enc(unsigned char *buf, int len) {
 	int i, length;
 	unsigned int byte;
-	unsigned char *key;
+	unsigned char key_a, key_b;
 
-	printf("Key size: ");
-	if (scanf("%d", &length) != 1) {
-		fprintf(stderr, "\nInvalid key size.\n");
+	getAffineKey(&key_a, &key_b);
+
+	if(gcd(key_a, MODULE) != 1) {
+		fprintf(stderr, "\nError: key A %d and module value %d are not coprimes.\n", key_a, MODULE);
 		exit(1);
 	}
-	key = (char *)malloc((length + 1) * (sizeof(char)));
-	getchar();
 
-	printf("Encryption key: ");
-	for (i = 0; i < length; i++) {
-		if (scanf("%u", &byte) != 1) {
-			fprintf(stderr, "\nError reading encryption key.\n");
-			exit(1);
-		}
-		key[i] = byte % 256;
-	}
-	key[length] = '\0';
 	for (i = 0; i < len; i++) {
-		buf[i] = (buf[i] * key[0] + key[1]) % MODULE;
+		buf[i] = (buf[i] * key_a + key_b) % MODULE;
 	}
-	free(key);
-
 }
 
 
 /* Implements the affine decryption */
 void affine_dec(unsigned char *buf, int len) {
+	int i, length;
+	unsigned int byte;
+	unsigned char key_a, key_b;
+	getAffineKey(&key_a, &key_b);
 
-	
+	if(gcd(key_a, MODULE) != 1) {
+		fprintf(stderr, "\nError: key A %d and module value %d are not coprimes.\n", key_a, MODULE);
+		exit(1);
+	}
+
+	for (i = 0; i < len; i++) {
+		buf[i] = ((buf[i] - key_b) / key_a) % MODULE;
+	}
 }
 
 
